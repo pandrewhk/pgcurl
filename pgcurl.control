@@ -1,0 +1,5 @@
+# pgcurl extension
+comment = 'Call curl from PostgreSQL'
+default_version = '0.0.1'
+module_pathname = '$libdir/pgcurl'
+relocatable = true
