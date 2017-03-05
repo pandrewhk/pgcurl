@@ -8,7 +8,7 @@
 
 PG_MODULE_MAGIC;
 
-int get(void *url, void *buf);
+int get(StringInfo url, StringInfo buf);
 
 PG_FUNCTION_INFO_V1(curl);
 
@@ -25,12 +25,16 @@ Datum
 curl(PG_FUNCTION_ARGS)
 {
 	int res;
-	StringInfo url;
-	StringInfo buf;
+	StringInfo url = makeStringInfo();
+	StringInfo buf = makeStringInfo();
+	text *out;
 
 	res = get(url, buf);
+	out = (text *) buf->data;
+	SET_VARSIZE(out, buf->len);
 
-	PG_RETURN_TEXT_P(cstring_to_text("Hello, World!"));
+	PG_RETURN_TEXT_P(out);
+//	PG_RETURN_TEXT_P(cstring_to_text("Hello, World!"));
 }
 
 int get(StringInfo url, StringInfo buf)
@@ -43,8 +47,8 @@ int get(StringInfo url, StringInfo buf)
     curl_easy_setopt(curl, CURLOPT_URL, "http://httpbin.org/get");
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
-    initStringInfo(&buf);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buf);
+    initStringInfo(buf);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, buf);
 
     res = curl_easy_perform(curl);
     if(res != CURLE_OK)
